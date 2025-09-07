@@ -1,7 +1,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$TaskName,
-  [int]$WorkMinutes = 25,
-  [int]$BreakMinutes = 5,
+  [int]$WorkMinutes = 1,
+  [int]$BreakMinutes = 1,
   [int]$ExpectedPomodoros = 1
 )
 

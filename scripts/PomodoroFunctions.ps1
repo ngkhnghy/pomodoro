@@ -1,5 +1,3 @@
-# PomodoroFunctions.ps1
-# Thư viện các hàm dùng chung cho project Pomodoro
 
 param()
 
@@ -21,12 +19,76 @@ function Get-Data {
   if (-not (Test-Path $DataFile)) {
     Initialize-DataFile
   }
-  $json = Get-Content -Path $DataFile -Raw
-  return $json | ConvertFrom-Json
+  
+  $maxRetries = 5
+  $retryCount = 0
+  $backoffInterval = 500 # milliseconds
+  $json = $null
+  
+  while ($retryCount -lt $maxRetries) {
+    try {
+      $json = Get-Content -Path $DataFile -Raw -ErrorAction Stop
+      break # Success, exit the loop
+    }
+    catch {
+      $retryCount++
+      Write-Verbose "Failed to read data from $DataFile (Attempt $retryCount of $maxRetries): $($_.Exception.Message)"
+      
+      if ($retryCount -lt $maxRetries) {
+        # Exponential backoff
+        $waitTime = $backoffInterval * [Math]::Pow(2, $retryCount - 1)
+        Start-Sleep -Milliseconds $waitTime
+      }
+      else {
+        Write-Warning "Failed to read data after $maxRetries attempts: $($_.Exception.Message)"
+        # Return empty data structure to prevent further errors
+        return [PSCustomObject]@{ tasks = @(); sessions = @() }
+      }
+    }
+  }
+  
+  if ([string]::IsNullOrWhiteSpace($json)) {
+    # If the file is empty or only contains whitespace, return empty structure
+    return [PSCustomObject]@{ tasks = @(); sessions = @() }
+  }
+  
+  try {
+    return $json | ConvertFrom-Json
+  }
+  catch {
+    Write-Warning "Failed to parse JSON data: $($_.Exception.Message)"
+    # Return empty data structure if JSON parsing fails
+    return [PSCustomObject]@{ tasks = @(); sessions = @() }
+  }
 }
 
 function Save-Data($data) {
-  $data | ConvertTo-Json -Depth 5 | Set-Content -Path $DataFile -Encoding UTF8
+  $maxRetries = 5
+  $retryCount = 0
+  $backoffInterval = 500 # milliseconds
+  
+  $jsonContent = $data | ConvertTo-Json -Depth 5
+  
+  while ($retryCount -lt $maxRetries) {
+    try {
+      # Use Out-File with -NoNewline instead of Set-Content for better file locking behavior
+      $jsonContent | Out-File -FilePath $DataFile -Encoding utf8 -NoNewline -Force
+      return # Success, exit the function
+    }
+    catch {
+      $retryCount++
+      Write-Verbose "Failed to save data to $DataFile (Attempt $retryCount of $maxRetries): $($_.Exception.Message)"
+      
+      if ($retryCount -lt $maxRetries) {
+        # Exponential backoff
+        $waitTime = $backoffInterval * [Math]::Pow(2, $retryCount - 1)
+        Start-Sleep -Milliseconds $waitTime
+      }
+      else {
+        Write-Warning "Failed to save data after $maxRetries attempts: $($_.Exception.Message)"
+      }
+    }
+  }
 }
 
 function Start-Timer([int]$Minutes, [string]$Label = "Timer") {
@@ -46,7 +108,7 @@ function Start-Timer([int]$Minutes, [string]$Label = "Timer") {
     [console]::Beep(1100, 300)
   }
   catch { }
-  Send-Notification "Pomodoro - $Label" "Đã hoàn tất $Label trong $Minutes phút."
+  Send-Notification "Pomodoro - $Label" "$Label completed in $Minutes minute(s)."
 }
 
 function Add-Session([string]$TaskName, [int]$Minutes, [string]$Type) {
