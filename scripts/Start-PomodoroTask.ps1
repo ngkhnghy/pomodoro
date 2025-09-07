@@ -14,13 +14,13 @@ while ($count -lt $ExpectedPomodoros) {
   $count++
   Write-Host "`n[Task: $TaskName] Pomodoro #$count - Work $WorkMinutes min"
   Start-Timer -Minutes $WorkMinutes -Label "Work ($TaskName)"
-  Record-Session -TaskName $TaskName -Minutes $WorkMinutes -Type 'Work'
+  Register-Session -TaskName $TaskName -Minutes $WorkMinutes -Type 'Work'
 
   if ($count -ge $ExpectedPomodoros) { break }
 
   Write-Host "[Task: $TaskName] Break $BreakMinutes min"
   Start-Timer -Minutes $BreakMinutes -Label "Break ($TaskName)"
-  Record-Session -TaskName $TaskName -Minutes $BreakMinutes -Type 'Break'
+  Register-Session -TaskName $TaskName -Minutes $BreakMinutes -Type 'Break'
 }
 
-Send-Notification "Pomodoro Task Complete" "Task '$TaskName' hoàn tất $ExpectedPomodoros pomodoro(s)."
+Send-Notification "Pomodoro Task Complete" "Task '$TaskName' completed $ExpectedPomodoros pomodoro(s)."

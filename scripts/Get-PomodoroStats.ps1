@@ -1,5 +1,5 @@
 param(
-  [ValidateSet('Day','Week','All')]
+  [ValidateSet('Day', 'Week', 'All')]
   [string]$Period = 'Day'
 )
 
@@ -12,12 +12,13 @@ Write-Host "Total focused minutes: $($stats.TotalMinutes)"
 
 if ($stats.ByTask) {
   $stats.ByTask | Sort-Object -Property Minutes -Descending | Format-Table -AutoSize
-} else {
+}
+else {
   Write-Host "No sessions in this period."
 }
 
 # Show tasks summary
-$data = Load-Data
+$data = Get-Data
 if ($data.tasks) {
   Write-Host "`nTasks overview:"
   $data.tasks | Select-Object Name, CompletedPomodoros | Format-Table -AutoSize
