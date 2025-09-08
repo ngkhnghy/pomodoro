@@ -22,8 +22,6 @@ data/
 scripts/
   Get-PomodoroStats.ps1  # View statistics
   PomodoroFunctions.ps1  # Core functions (imported by other scripts)
-  Send-PomodoroReport.ps1# Send summary report (email, etc.)
-  Set-PomodoroEmail.ps1  # Configure email for reports
   Start-Pomodoro.ps1     # Start a Pomodoro session
   Start-PomodoroTask.ps1 # Start a Pomodoro for a specific task
 ```
