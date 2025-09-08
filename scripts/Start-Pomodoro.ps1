@@ -1,8 +1,7 @@
 param(
   [int]$WorkMinutes = 30,
   [int]$BreakMinutes = 5,
-  [int]$Cycles = 5,
-  [switch]$Auto # nếu set thì sẽ tự chạy liên tục theo số cycles
+  [int]$Cycles = 5
 )
 
 # Dot-source functions

@@ -197,7 +197,7 @@ function Add-Session([string]$TaskName, [int]$Minutes, [string]$Type) {
     if (-not $exists) {
       $data.tasks += [PSCustomObject]@{ Name = $TaskName; CompletedPomodoros = 0 }
     }
-    # Nếu type là Work thì tăng completed pomodoro cho task
+
     if ($Type -eq 'Work') {
       $data.tasks | Where-Object { $_.Name -eq $TaskName } | ForEach-Object { $_.CompletedPomodoros = $_.CompletedPomodoros + 1 }
     }
@@ -318,18 +318,15 @@ function Get-PomodoroSummary([int]$LastDays = 7) {
 }
 
 function Send-Notification([string]$Title, [string]$Message) {
-  # Using BurntToast module if available
   if (Get-Module -ListAvailable -Name BurntToast) {
     try {
       New-BurntToastNotification -AppLogo "$PomoRoot\data\pomodoro.png" -Text $Title, $Message -ErrorAction SilentlyContinue
       return
     }
     catch {
-      # Fallback to built-in method if BurntToast fails
     }
   }
   
-  # Windows 10/11 built-in notification
   try {
     [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
     [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
@@ -346,12 +343,10 @@ function Send-Notification([string]$Title, [string]$Message) {
     return
   }
   catch {
-    # Fallback if Windows APIs not available
     Write-Host "Notification: $Title - $Message" -ForegroundColor Yellow
   }
 }
 
 function Register-Session([string]$TaskName, [int]$Minutes, [string]$Type) {
-  # This function wraps Add-Session for compatibility
   Add-Session -TaskName $TaskName -Minutes $Minutes -Type $Type
 }
